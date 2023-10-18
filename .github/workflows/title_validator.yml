@@ -1,0 +1,28 @@
+name: Validate Repository Format
+
+on:
+  pull_request:
+    types:
+      - opened
+  push:
+    branches:
+      - main  # Adjust the branch name as needed
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check Title Format
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        title=$(jq -r '.pull_request.title' "$GITHUB_EVENT_PATH")
+
+        # Define the title format pattern
+        title_pattern="^PAYMENTS-[1-9][0-9]{0,3}: .+$"
+
+        if ! [[ $title =~ $title_pattern ]]; then
+          echo "Error: Invalid title format. Title should match 'PAYMENTS-X: description' where X is a number between 1 and 9999."
+          exit 1
+        fi
